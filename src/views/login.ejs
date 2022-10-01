@@ -1,0 +1,21 @@
+<%- include('header',{
+title:'Login'
+}); -%>
+<div class="container login-container">
+    <form class="form-class" id="login-form">
+        <div id="error-section" class="error-section"></div>
+        <div class="form-div">
+            <div class="field-row">
+                <label class="field-col-sm" for="email">Email</label>
+                <input class="field-col field-class" type = "text" name ="email" id="email">
+            </div>
+            <div class="field-row">
+                <label class="field-col-sm" for="password">Password</label>
+                <input class="field-col field-class" type = "password" name ="password" id="password">
+            </div>
+            <button class="submit-class color-primary" type="submit">Login</button>
+            <button id="button-signup" class="submit-class color-success" type="button">Sign Up</button>
+        </div>
+    </form>
+</div>
+<script type="text/javascript" src="/js/login.js"></script>

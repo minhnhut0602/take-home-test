@@ -1,3 +1,28 @@
-<div>
-login
-<div>
+<%- include('header',{
+title:'Registration'
+}); -%>
+<div class="container signup-container">
+    <form class="form-class" id="signup-form">
+        <div id="error-section" class="error-section"></div>
+        <div class="form-div">
+            <div class="field-row">
+                <label class="field-col-sm" for="email">Name</label>
+                <input class="field-col field-class" type = "text" name ="name" id="name">
+            </div>
+            <div class="field-row">
+                <label class="field-col-sm" for="email">Email</label>
+                <input class="field-col field-class" type = "text" name ="email" id="email">
+            </div>
+            <div class="field-row">
+                <label class="field-col-sm" for="password">Password</label>
+                <input class="field-col field-class" type = "password" name ="password" id="password">
+            </div>
+            <button class="submit-class color-success" type="submit">Sign up</button>
+            <button id="button-login" class="submit-class color-primary" type="button">Login</button>
+        </div>
+    </form>
+    <div id="graphic-play">
+        <img src="https://i.imgur.com/u1j9f7T.png?s=328&g=1" width=100px height=100px>
+    </div>
+</div>
+<script type="text/javascript" src="/js/signup.js"></script>
