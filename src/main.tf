@@ -9,10 +9,44 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
+resource "aws_db_instance" "rds_instance" {
+   allocated_storage = 20
+   identifier = "rds-home-test"
+   storage_type = "gp2"
+   engine = "mysql"
+   engine_version = "8.0.27"
+   instance_class = "db.t2.micro"
+   db_name = var.mysql_db_name
+   username = var.mysql_username
+   password = var.mysql_password
+   publicly_accessible    = true
+   skip_final_snapshot    = true
+
+   tags = {
+      Name = "HomeTestRDSServerInstance"
+   }
+}
+
 resource "aws_ecr_repository" "ecr_repository" {
    name = local.ecr_repository_name
    image_scanning_configuration {
       scan_on_push = true
+   }
+}
+
+resource "null_resource" "docker_build" {
+
+   triggers = {
+      always_run = "${timestamp()}"
+   }
+
+   provisioner "local-exec" {
+      command = <<EOT
+      docker build -t ${var.ecr_repository_name}:${var.ecr_release_tag} .
+      docker tag ${var.ecr_repository_name}:${var.ecr_release_tag} ${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.ecr_repository_name}:${var.ecr_release_tag}
+      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com
+      docker push ${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.ecr_repository_name}:${var.ecr_release_tag}
+      EOT
    }
 }
 
@@ -53,35 +87,24 @@ resource "aws_iam_role" "runner_role" {
    })
 }
 
-resource "aws_iam_role_policy_attachment" "runner_role_policy_attachment" {
-   role       = aws_iam_role.runner_role.name
-   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
-}
-
 resource "time_sleep" "waitrolecreate" {
    depends_on = [aws_iam_role.runner_role]
    create_duration = "60s"
 }
 
-resource "aws_db_instance" "rds_instance" {
-   allocated_storage = 20
-   identifier = "rds-home-test"
-   storage_type = "gp2"
-   engine = "mysql"
-   engine_version = "8.0.27"
-   instance_class = "db.t2.micro"
-   db_name = var.mysql_db_name
-   username = var.mysql_username
-   password = var.mysql_password
-   publicly_accessible    = true
-   skip_final_snapshot    = true
+resource "aws_iam_role_policy_attachment" "runner_role_policy_attachment" {
+   role       = aws_iam_role.runner_role.name
+   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
+}
 
-   tags = {
-      Name = "HomeTestRDSServerInstance"
-   }
+resource "time_sleep" "waitrolecreate2" {
+   depends_on = [aws_iam_role_policy_attachment.runner_role_policy_attachment]
+   create_duration = "60s"
 }
 
 resource "aws_apprunner_service" "runner_service" {
+   depends_on = [time_sleep.waitrolecreate2]
+
    service_name = local.service_name
    source_configuration {
       authentication_configuration {

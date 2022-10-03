@@ -14,4 +14,9 @@ package-lock.json
 .npm
 
 # dotenv environment variables file
-.env.demo
+.env
+
+#temp terraform files
+.terraform
+.terraform.lock*
+terraform.tfstate*
